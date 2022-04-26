@@ -8,6 +8,27 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+app.post('/refresh', (req, res) => {
+    const refreshToken = req.body.refresh_token
+    const spotifyApi = new SpotifyWebApi({   
+        redirectUri: process.env.REDIRECT_URI,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken
+    })
+
+    spotifyApi.refreshAccessToken().then((data) => {
+        console.log(data.body);
+       // Save the access token so that it's use in future calls
+       res.json({
+           accessToken: data.body.accessToken,
+           expiresIn: data.body.expires_In
+       })
+    }).catch(() => {
+        res.status(400)
+    })    
+})
+
 app.post('/login', (req, res) => {
     const code = req.body.code;
     const spotifyApi = new SpotifyWebApi({   
